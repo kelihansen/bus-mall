@@ -31,12 +31,17 @@ const survey = {
 function Product (name, imageUrl) {
     this.name = name;
     this.imageUrl = imageUrl;
-    this.timesShown = timesShown;
-    this.timesClicked = timesClicked;
-    this.idName = idName;
+    this.timesShown = 0;
+    this.timesClicked = 0;
+    this.idName = this.imageUrl.slice(4, -4);
 }
 
-
+Product.prototype.createElement = function() {
+    const imgElement = document.createElement('img');
+    imgElement.src = `img/${this.imageUrl}`;
+    imgElement.alt = this.name;
+    return imgElement;
+};
 
 // function Cuttlefish (name, imageUrl) {
 //     this.name = name;

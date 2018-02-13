@@ -80,19 +80,42 @@ const survey = {
         imageHolder.textContent = '';
     },
     displayResults: function() {
-        const resultsHolder = document.getElementById('results-holder');
-        const ul = document.createElement('ul');
+        const chart = document.getElementById('chart');
+        const context = chart.getContext('2d');
+        const names = [];
+        const clickCounts = [];
+        console.log(names);
+        console.log(clickCounts);
         for (let i = 0; i < this.products.length; i++) {
             const item = this.products[i];
-            const li = document.createElement('li');
-            let votes = 'votes';
-            if (item.timesClicked === 1) {
-                votes = 'vote';
-            }
-            li.textContent = `${item.timesClicked} ${votes} for the ${item.name}`;
-            ul.appendChild(li);
+            names.push(item.name);
+            clickCounts.push(item.timesClicked);
         }
-        resultsHolder.appendChild(ul);
+        chart.classList.add('chart-style');
+        const gradient = context.createLinearGradient(0, 0, 200, 0);
+        gradient.addColorStop(0, 'green');
+        gradient.addColorStop(1, 'white');
+        new Chart(context, {
+            type: 'bar',
+            data: {
+                labels: names,
+                datasets: [{
+                    label: '# of Votes',
+                    data: clickCounts,
+                    backgroundColor: 'rgb(87, 169, 217)',
+                }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            stepSize: 1,
+                            beginAtZero: true
+                        }
+                    }]
+                }
+            }
+        });
     }
 };
 

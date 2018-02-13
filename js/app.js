@@ -33,15 +33,15 @@ const survey = {
         const imageHolder = document.getElementById('img-holder');
         function collectVotes() {
             const id = event.target.id;
-            for (let i = 0; i < survey.products.length; i++) {
-                const item = survey.products[i];
-                if (id === item.idName) {
-                    item.timesClicked++;
-                    survey.totalSelections++;
-                    break;
-                }
-            }
             if (id !== 'img-holder') {
+                for (let i = 0; i < survey.products.length; i++) {
+                    const item = survey.products[i];
+                    if (id === item.idName) {
+                        item.timesClicked++;
+                        survey.totalSelections++;
+                        break;
+                    }
+                }
                 survey.clearProducts();
                 if (survey.totalSelections < numberOfVotes) {
                     survey.displayProducts();

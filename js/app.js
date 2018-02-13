@@ -1,6 +1,7 @@
 'use strict';
 
 const numberOfChoices = 3;
+const numberOfVotes = 25;
 
 const survey = {
     products: [],
@@ -31,22 +32,23 @@ const survey = {
         this.displayProducts();
         const imageHolder = document.getElementById('img-holder');
         function collectVotes() {
-            const imageID = event.target.id;
+            const id = event.target.id;
             for (let i = 0; i < survey.products.length; i++) {
                 const item = survey.products[i];
-                if (imageID === item.idName) {
+                if (id === item.idName) {
                     item.timesClicked++;
                     survey.totalSelections++;
-                    console.log(survey.totalSelections);
                     break;
                 }
             }
-            survey.clearProducts();
-            if (survey.totalSelections < 25) {
-                survey.displayProducts();
-            } else {
-                imageHolder.removeEventListener('click', collectVotes);
-                // survey.displayResults();
+            if (id !== 'img-holder') {
+                survey.clearProducts();
+                if (survey.totalSelections < numberOfVotes) {
+                    survey.displayProducts();
+                } else {
+                    imageHolder.removeEventListener('click', collectVotes);
+                    survey.displayResults();
+                }
             }
         }
         imageHolder.addEventListener('click', collectVotes);
@@ -77,7 +79,21 @@ const survey = {
         const imageHolder = document.getElementById('img-holder');
         imageHolder.textContent = '';
     },
-    displayResults: 
+    displayResults: function() {
+        const resultsHolder = document.getElementById('results-holder');
+        const ul = document.createElement('ul');
+        for (let i = 0; i < this.products.length; i++) {
+            const item = this.products[i];
+            const li = document.createElement('li');
+            let votes = 'votes';
+            if (item.timesClicked === 1) {
+                votes = 'vote';
+            }
+            li.textContent = `${item.timesClicked} ${votes} for the ${item.name}`;
+            ul.appendChild(li);
+        }
+        resultsHolder.appendChild(ul);
+    }
 };
 
 function Product (name, imageUrl) {

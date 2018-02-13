@@ -1,8 +1,11 @@
 'use strict';
 
+const numberOfChoices = 3;
+
 const survey = {
     products: [],
-    collectVotes: function() {
+    totalSelections: 0,
+    begin: function() {
         this.products.push(
             new Product('Bag', 'img/bag.jpg'),
             new Product('Banana', 'img/banana.jpg'),
@@ -25,7 +28,56 @@ const survey = {
             new Product('Water Can', 'img/water-can.jpg'),
             new Product('Wine Glass', 'img/wine-glass.jpg')
         );
-    }
+        this.displayProducts();
+        const imageHolder = document.getElementById('img-holder');
+        function collectVotes() {
+            const imageID = event.target.id;
+            for (let i = 0; i < survey.products.length; i++) {
+                const item = survey.products[i];
+                if (imageID === item.idName) {
+                    item.timesClicked++;
+                    survey.totalSelections++;
+                    console.log(survey.totalSelections);
+                    break;
+                }
+            }
+            survey.clearProducts();
+            if (survey.totalSelections < 25) {
+                survey.displayProducts();
+            } else {
+                imageHolder.removeEventListener('click', collectVotes);
+                // survey.displayResults();
+            }
+        }
+        imageHolder.addEventListener('click', collectVotes);
+    },
+    getRandomProducts: function() {
+        const selectedProducts = [];
+        while (selectedProducts.length < numberOfChoices) {
+            const randomIndex = Math.floor(Math.random() * this.products.length);
+            const potentialProduct = this.products[randomIndex];
+            if (selectedProducts.includes(potentialProduct)) continue;
+            selectedProducts.push(potentialProduct);
+            potentialProduct.timesShown++;
+        }
+        return selectedProducts;
+    },
+    displayProducts: function() {
+        const products = this.getRandomProducts();
+        const imageHolder = document.getElementById('img-holder');
+        for (let i = 0; i < numberOfChoices; i++) {
+            const imagePanel = document.createElement('div');
+            const newImage = products[i].createImage();
+            imagePanel.setAttribute('class', 'img-panel');
+            imagePanel.appendChild(newImage);
+            imageHolder.appendChild(imagePanel);
+        }
+    },
+    clearProducts: function() {
+        const imageHolder = document.getElementById('img-holder');
+        imageHolder.textContent = '';
+    },
+    displayResults: 
 };
 
 function Product (name, imageUrl) {
@@ -36,22 +88,12 @@ function Product (name, imageUrl) {
     this.idName = this.imageUrl.slice(4, -4);
 }
 
-Product.prototype.createElement = function() {
-    const imgElement = document.createElement('img');
-    imgElement.src = `img/${this.imageUrl}`;
-    imgElement.alt = this.name;
-    return imgElement;
+Product.prototype.createImage = function() {
+    const imageElement = document.createElement('img');
+    imageElement.src = this.imageUrl;
+    imageElement.alt = this.name;
+    imageElement.id = this.idName;
+    return imageElement;
 };
 
-// function Cuttlefish (name, imageUrl) {
-//     this.name = name;
-//     this.imageUrl = imageUrl;
-//     this.timesCaught = 0;
-// }
-
-// Cuttlefish.prototype.render = function () {
-//     const ele = document.createElement('img');
-//     ele.src =  `media/images/${this.imageUrl}`;
-//     ele.setAttribute('alt', this.name);
-//     return ele;
-// };
+survey.begin();

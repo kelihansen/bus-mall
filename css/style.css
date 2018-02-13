@@ -19,10 +19,13 @@ body {
     background-color: white;
     border: solid 20px white;
     height: 300px;
+    width: 300px;
     display: flex;
+    justify-content: center;
     align-items: center;
 }
 
 img {
-    width: 300px;
+    max-width: 300px;
+    max-height: 300px;
 }

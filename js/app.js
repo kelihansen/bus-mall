@@ -97,7 +97,7 @@ const survey = {
             shownCounts.push(item.timesShown);
         }
         chart.classList.add('chart-style');
-        new Chart(context, {
+        new Chart(context, { //eslint-disable-line
             type: 'bar',
             data: {
                 labels: names,

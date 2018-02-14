@@ -34,7 +34,6 @@ const survey = {
         this.displayProducts();
         function collectVotes() {
             let id = event.target.id;
-            console.log(event.target.firstElementChild.id);
             if (id === '') {
                 id = event.target.firstElementChild.id;
             }
@@ -44,7 +43,6 @@ const survey = {
                     if (id === item.idName) {
                         item.timesClicked++;
                         survey.totalSelections++;
-                        console.log(survey.totalSelections);
                         break;
                     }
                 }
@@ -106,11 +104,11 @@ const survey = {
                 datasets: [{
                     label: 'Times Shown',
                     data: shownCounts,
-                    backgroundColor: 'rgba(87, 169, 217, .2)',
+                    backgroundColor: 'rgba(87, 169, 217, .3)',
                     borderWidth: 0
                 },
                 {
-                    label: '# of Votes',
+                    label: 'Times Selected',
                     data: clickCounts,
                     backgroundColor: 'rgba(87, 169, 217, 1)',
                     borderWidth: 0

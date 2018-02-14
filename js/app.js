@@ -33,13 +33,18 @@ const survey = {
         );
         this.displayProducts();
         function collectVotes() {
-            const id = event.target.id;
+            let id = event.target.id;
+            console.log(event.target.firstElementChild.id);
+            if (id === '') {
+                id = event.target.firstElementChild.id;
+            }
             if (id !== 'img-holder') {
                 for (let i = 0; i < survey.products.length; i++) {
                     const item = survey.products[i];
                     if (id === item.idName) {
                         item.timesClicked++;
                         survey.totalSelections++;
+                        console.log(survey.totalSelections);
                         break;
                     }
                 }
@@ -85,11 +90,13 @@ const survey = {
         const chart = document.getElementById('chart');
         const context = chart.getContext('2d');
         const names = [];
+        const shownCounts = [];
         const clickCounts = [];
         for (let i = 0; i < this.products.length; i++) {
             const item = this.products[i];
             names.push(item.name);
             clickCounts.push(item.timesClicked);
+            shownCounts.push(item.timesShown);
         }
         chart.classList.add('chart-style');
         new Chart(context, {
@@ -97,14 +104,24 @@ const survey = {
             data: {
                 labels: names,
                 datasets: [{
+                    label: 'Times Shown',
+                    data: shownCounts,
+                    backgroundColor: 'rgba(87, 169, 217, .2)',
+                    borderWidth: 0
+                },
+                {
                     label: '# of Votes',
                     data: clickCounts,
-                    backgroundColor: 'rgb(87, 169, 217)',
+                    backgroundColor: 'rgba(87, 169, 217, 1)',
                     borderWidth: 0
                 }]
             },
             options: {
                 scales: {
+                    xAxes: [{
+                        barPercentage: 1,
+                        categoryPercentage: 0.7
+                    }],
                     yAxes: [{
                         ticks: {
                             stepSize: 1,

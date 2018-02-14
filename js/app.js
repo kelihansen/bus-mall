@@ -9,52 +9,38 @@ const survey = {
     totalSelections: 0,
     imageHolder: document.getElementById('img-holder'),
     begin: function() {
-        this.products.push(
-            new Product('Bag', 'img/bag.jpg'),
-            new Product('Banana', 'img/banana.jpg'),
-            new Product('Bathroom', 'img/bathroom.jpg'),
-            new Product('Boots', 'img/boots.jpg'),
-            new Product('Breakfast', 'img/breakfast.jpg'),
-            new Product('Bubblegum', 'img/bubblegum.jpg'),
-            new Product('Chair', 'img/chair.jpg'),
-            new Product('Cthulhu', 'img/cthulhu.jpg'),
-            new Product('Dog Duck', 'img/dog-duck.jpg'),
-            new Product('Dragon', 'img/dragon.jpg'),
-            new Product('Pen', 'img/pen.jpg'),
-            new Product('Pet Sweep', 'img/pet-sweep.jpg'),
-            new Product('Scissors', 'img/scissors.jpg'),
-            new Product('Shark', 'img/shark.jpg'),
-            new Product('Sweep', 'img/sweep.png'),
-            new Product('Tauntaun', 'img/tauntaun.jpg'),
-            new Product('Unicorn', 'img/unicorn.jpg'),
-            new Product('USB', 'img/usb.gif'),
-            new Product('Water Can', 'img/water-can.jpg'),
-            new Product('Wine Glass', 'img/wine-glass.jpg')
-        );
-        this.displayProducts();
-        function collectVotes() {
-            let id = event.target.id;
-            if (id === '') {
-                id = event.target.firstElementChild.id;
+        if (localStorage.getItem('products')) {
+            const storedProducts = JSON.parse(localStorage.getItem('products'));
+            for (let i = 0; i < storedProducts.length; i++) {
+                const storedProduct = storedProducts[i];
+                const updatedProduct = new Product(storedProduct.name, storedProduct.imageUrl, storedProduct.cumulativeShown, storedProduct.cumulativeClicked);
+                this.products.push(updatedProduct);
             }
-            if (id !== 'img-holder') {
-                for (let i = 0; i < survey.products.length; i++) {
-                    const item = survey.products[i];
-                    if (id === item.idName) {
-                        item.timesClicked++;
-                        survey.totalSelections++;
-                        break;
-                    }
-                }
-                survey.clearProducts();
-                if (survey.totalSelections < numberOfVotes) {
-                    survey.displayProducts();
-                } else {
-                    survey.imageHolder.removeEventListener('click', collectVotes);
-                    survey.displayResults();
-                }
-            }
+        } else {
+            this.products.push(
+                new Product('Bag', 'img/bag.jpg', 0, 0),
+                new Product('Banana', 'img/banana.jpg', 0, 0),
+                new Product('Bathroom', 'img/bathroom.jpg', 0, 0),
+                new Product('Boots', 'img/boots.jpg', 0, 0),
+                new Product('Breakfast', 'img/breakfast.jpg', 0, 0),
+                new Product('Bubblegum', 'img/bubblegum.jpg', 0, 0),
+                new Product('Chair', 'img/chair.jpg', 0, 0),
+                new Product('Cthulhu', 'img/cthulhu.jpg', 0, 0),
+                new Product('Dog Duck', 'img/dog-duck.jpg', 0, 0),
+                new Product('Dragon', 'img/dragon.jpg', 0, 0),
+                new Product('Pen', 'img/pen.jpg', 0, 0),
+                new Product('Pet Sweep', 'img/pet-sweep.jpg', 0, 0),
+                new Product('Scissors', 'img/scissors.jpg', 0, 0),
+                new Product('Shark', 'img/shark.jpg', 0, 0),
+                new Product('Sweep', 'img/sweep.png', 0, 0),
+                new Product('Tauntaun', 'img/tauntaun.jpg', 0, 0),
+                new Product('Unicorn', 'img/unicorn.jpg', 0, 0),
+                new Product('USB', 'img/usb.gif', 0, 0),
+                new Product('Water Can', 'img/water-can.jpg', 0, 0),
+                new Product('Wine Glass', 'img/wine-glass.jpg', 0, 0)
+            );
         }
+        this.displayProducts();
         this.imageHolder.addEventListener('click', collectVotes);
     },
     getRandomProducts: function() {
@@ -77,6 +63,7 @@ const survey = {
             imagePanel.appendChild(newImage);
             this.imageHolder.appendChild(imagePanel);
             selectedProducts[i].timesShown++;
+            selectedProducts[i].cumulativeShown++;
         }
     },
     clearProducts: function() {
@@ -84,9 +71,15 @@ const survey = {
             this.imageHolder.removeChild(this.imageHolder.firstChild);
         }
     },
-    displayResults: function() {
-        const chart = document.getElementById('chart');
-        const context = chart.getContext('2d');
+    end: function () {
+        this.imageHolder.removeEventListener('click', collectVotes);
+        this.displaySessionResults();
+        this.displayCumulativeResults();
+        localStorage.setItem('products', JSON.stringify(this.products));
+    },
+    displaySessionResults: function() {
+        const sessionChart = document.getElementById('session-chart');
+        const context = sessionChart.getContext('2d');
         const names = [];
         const shownCounts = [];
         const clickCounts = [];
@@ -96,7 +89,7 @@ const survey = {
             clickCounts.push(item.timesClicked);
             shownCounts.push(item.timesShown);
         }
-        chart.classList.add('chart-style');
+        sessionChart.classList.add('chart-style');
         new Chart(context, { //eslint-disable-line
             type: 'bar',
             data: {
@@ -104,7 +97,53 @@ const survey = {
                 datasets: [{
                     label: 'Times Shown',
                     data: shownCounts,
-                    backgroundColor: 'rgba(87, 169, 217, .3)',
+                    backgroundColor: 'rgba(87, 169, 217, .2)',
+                    borderWidth: 0
+                },
+                {
+                    label: 'Times Selected',
+                    data: clickCounts,
+                    backgroundColor: 'rgba(87, 169, 217, 1)',
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                scales: {
+                    xAxes: [{
+                        barPercentage: 1,
+                        categoryPercentage: 0.7
+                    }],
+                    yAxes: [{
+                        ticks: {
+                            stepSize: 1,
+                            beginAtZero: true
+                        }
+                    }]
+                }
+            }
+        });
+    },
+    displayCumulativeResults: function () {
+        const cumulativeChart = document.getElementById('cumulative-chart');
+        const context = cumulativeChart.getContext('2d');
+        const names = [];
+        const shownCounts = [];
+        const clickCounts = [];
+        for (let i = 0; i < this.products.length; i++) {
+            const item = this.products[i];
+            names.push(item.name);
+            clickCounts.push(item.cumulativeClicked);
+            shownCounts.push(item.cumulativeShown);
+        }
+        cumulativeChart.classList.add('chart-style');
+        new Chart(context, { //eslint-disable-line
+            type: 'bar',
+            data: {
+                labels: names,
+                datasets: [{
+                    label: 'Times Shown',
+                    data: shownCounts,
+                    backgroundColor: 'rgba(87, 169, 217, .2)',
                     borderWidth: 0
                 },
                 {
@@ -132,11 +171,37 @@ const survey = {
     }
 };
 
-function Product (name, imageUrl) {
+function collectVotes() {
+    let id = event.target.id;
+    if (id === '') {
+        id = event.target.firstElementChild.id;
+    }
+    if (id !== 'img-holder') {
+        for (let i = 0; i < survey.products.length; i++) {
+            const item = survey.products[i];
+            if (id === item.idName) {
+                item.timesClicked++;
+                item.cumulativeClicked++;
+                survey.totalSelections++;
+                break;
+            }
+        }
+        survey.clearProducts();
+        if (survey.totalSelections < numberOfVotes) {
+            survey.displayProducts();
+        } else {
+            survey.end();
+        }
+    }
+}
+
+function Product (name, imageUrl, cumulativeShown, cumulativeClicked) {
     this.name = name;
     this.imageUrl = imageUrl;
     this.timesShown = 0;
+    this.cumulativeShown = cumulativeShown;
     this.timesClicked = 0;
+    this.cumulativeClicked = cumulativeClicked;
     this.idName = this.imageUrl.slice(4, -4);
 }
 

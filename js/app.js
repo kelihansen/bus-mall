@@ -5,7 +5,9 @@ const numberOfVotes = 25;
 
 const survey = {
     products: [],
+    previousSelections: [],
     totalSelections: 0,
+    imageHolder: document.getElementById('img-holder'),
     begin: function() {
         this.products.push(
             new Product('Bag', 'img/bag.jpg'),
@@ -30,7 +32,6 @@ const survey = {
             new Product('Wine Glass', 'img/wine-glass.jpg')
         );
         this.displayProducts();
-        const imageHolder = document.getElementById('img-holder');
         function collectVotes() {
             const id = event.target.id;
             if (id !== 'img-holder') {
@@ -46,55 +47,51 @@ const survey = {
                 if (survey.totalSelections < numberOfVotes) {
                     survey.displayProducts();
                 } else {
-                    imageHolder.removeEventListener('click', collectVotes);
+                    survey.imageHolder.removeEventListener('click', collectVotes);
                     survey.displayResults();
                 }
             }
         }
-        imageHolder.addEventListener('click', collectVotes);
+        this.imageHolder.addEventListener('click', collectVotes);
     },
     getRandomProducts: function() {
         const selectedProducts = [];
         while (selectedProducts.length < numberOfChoices) {
             const randomIndex = Math.floor(Math.random() * this.products.length);
             const potentialProduct = this.products[randomIndex];
-            if (selectedProducts.includes(potentialProduct)) continue;
+            if (selectedProducts.includes(potentialProduct) || this.previousSelections.includes(potentialProduct)) continue;
             selectedProducts.push(potentialProduct);
-            potentialProduct.timesShown++;
         }
+        this.previousSelections = selectedProducts;
         return selectedProducts;
     },
     displayProducts: function() {
-        const products = this.getRandomProducts();
-        const imageHolder = document.getElementById('img-holder');
+        const selectedProducts = this.getRandomProducts();
         for (let i = 0; i < numberOfChoices; i++) {
             const imagePanel = document.createElement('div');
-            const newImage = products[i].createImage();
+            const newImage = selectedProducts[i].createImage();
             imagePanel.setAttribute('class', 'img-panel');
             imagePanel.appendChild(newImage);
-            imageHolder.appendChild(imagePanel);
+            this.imageHolder.appendChild(imagePanel);
+            selectedProducts[i].timesShown++;
         }
     },
     clearProducts: function() {
-        const imageHolder = document.getElementById('img-holder');
-        imageHolder.textContent = '';
+        while (this.imageHolder.firstChild) {
+            this.imageHolder.removeChild(this.imageHolder.firstChild);
+        }
     },
     displayResults: function() {
         const chart = document.getElementById('chart');
         const context = chart.getContext('2d');
         const names = [];
         const clickCounts = [];
-        console.log(names);
-        console.log(clickCounts);
         for (let i = 0; i < this.products.length; i++) {
             const item = this.products[i];
             names.push(item.name);
             clickCounts.push(item.timesClicked);
         }
         chart.classList.add('chart-style');
-        const gradient = context.createLinearGradient(0, 0, 200, 0);
-        gradient.addColorStop(0, 'green');
-        gradient.addColorStop(1, 'white');
         new Chart(context, {
             type: 'bar',
             data: {
@@ -103,6 +100,7 @@ const survey = {
                     label: '# of Votes',
                     data: clickCounts,
                     backgroundColor: 'rgb(87, 169, 217)',
+                    borderWidth: 0
                 }]
             },
             options: {

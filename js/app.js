@@ -5,7 +5,9 @@ const numberOfVotes = 25;
 
 const survey = {
     products: [],
+    previousSelections: [],
     totalSelections: 0,
+    imageHolder: document.getElementById('img-holder'),
     begin: function() {
         this.products.push(
             new Product('Bag', 'img/bag.jpg'),
@@ -30,9 +32,11 @@ const survey = {
             new Product('Wine Glass', 'img/wine-glass.jpg')
         );
         this.displayProducts();
-        const imageHolder = document.getElementById('img-holder');
         function collectVotes() {
-            const id = event.target.id;
+            let id = event.target.id;
+            if (id === '') {
+                id = event.target.firstElementChild.id;
+            }
             if (id !== 'img-holder') {
                 for (let i = 0; i < survey.products.length; i++) {
                     const item = survey.products[i];
@@ -46,53 +50,85 @@ const survey = {
                 if (survey.totalSelections < numberOfVotes) {
                     survey.displayProducts();
                 } else {
-                    imageHolder.removeEventListener('click', collectVotes);
+                    survey.imageHolder.removeEventListener('click', collectVotes);
                     survey.displayResults();
                 }
             }
         }
-        imageHolder.addEventListener('click', collectVotes);
+        this.imageHolder.addEventListener('click', collectVotes);
     },
     getRandomProducts: function() {
         const selectedProducts = [];
         while (selectedProducts.length < numberOfChoices) {
             const randomIndex = Math.floor(Math.random() * this.products.length);
             const potentialProduct = this.products[randomIndex];
-            if (selectedProducts.includes(potentialProduct)) continue;
+            if (selectedProducts.includes(potentialProduct) || this.previousSelections.includes(potentialProduct)) continue;
             selectedProducts.push(potentialProduct);
-            potentialProduct.timesShown++;
         }
+        this.previousSelections = selectedProducts;
         return selectedProducts;
     },
     displayProducts: function() {
-        const products = this.getRandomProducts();
-        const imageHolder = document.getElementById('img-holder');
+        const selectedProducts = this.getRandomProducts();
         for (let i = 0; i < numberOfChoices; i++) {
             const imagePanel = document.createElement('div');
-            const newImage = products[i].createImage();
+            const newImage = selectedProducts[i].createImage();
             imagePanel.setAttribute('class', 'img-panel');
             imagePanel.appendChild(newImage);
-            imageHolder.appendChild(imagePanel);
+            this.imageHolder.appendChild(imagePanel);
+            selectedProducts[i].timesShown++;
         }
     },
     clearProducts: function() {
-        const imageHolder = document.getElementById('img-holder');
-        imageHolder.textContent = '';
+        while (this.imageHolder.firstChild) {
+            this.imageHolder.removeChild(this.imageHolder.firstChild);
+        }
     },
     displayResults: function() {
-        const resultsHolder = document.getElementById('results-holder');
-        const ul = document.createElement('ul');
+        const chart = document.getElementById('chart');
+        const context = chart.getContext('2d');
+        const names = [];
+        const shownCounts = [];
+        const clickCounts = [];
         for (let i = 0; i < this.products.length; i++) {
             const item = this.products[i];
-            const li = document.createElement('li');
-            let votes = 'votes';
-            if (item.timesClicked === 1) {
-                votes = 'vote';
-            }
-            li.textContent = `${item.timesClicked} ${votes} for the ${item.name}`;
-            ul.appendChild(li);
+            names.push(item.name);
+            clickCounts.push(item.timesClicked);
+            shownCounts.push(item.timesShown);
         }
-        resultsHolder.appendChild(ul);
+        chart.classList.add('chart-style');
+        new Chart(context, { //eslint-disable-line
+            type: 'bar',
+            data: {
+                labels: names,
+                datasets: [{
+                    label: 'Times Shown',
+                    data: shownCounts,
+                    backgroundColor: 'rgba(87, 169, 217, .3)',
+                    borderWidth: 0
+                },
+                {
+                    label: 'Times Selected',
+                    data: clickCounts,
+                    backgroundColor: 'rgba(87, 169, 217, 1)',
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                scales: {
+                    xAxes: [{
+                        barPercentage: 1,
+                        categoryPercentage: 0.7
+                    }],
+                    yAxes: [{
+                        ticks: {
+                            stepSize: 1,
+                            beginAtZero: true
+                        }
+                    }]
+                }
+            }
+        });
     }
 };
 

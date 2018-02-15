@@ -161,7 +161,6 @@ const survey = {
                     }],
                     yAxes: [{
                         ticks: {
-                            stepSize: 1,
                             beginAtZero: true
                         }
                     }]

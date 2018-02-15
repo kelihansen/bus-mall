@@ -53,7 +53,7 @@ const survey = {
             );
         }
     },
-    getRandomProducts: function() {
+    pickRandomProducts: function() {
         const selectedProducts = [];
         while (selectedProducts.length < this.numberOfChoices) {
             const randomIndex = Math.floor(Math.random() * this.products.length);
@@ -65,7 +65,7 @@ const survey = {
         return selectedProducts;
     },
     displayProducts: function() {
-        const selectedProducts = this.getRandomProducts();
+        const selectedProducts = this.pickRandomProducts();
         for (let i = 0; i < this.numberOfChoices; i++) {
             const imagePanel = document.createElement('div');
             const newImage = selectedProducts[i].createImage();

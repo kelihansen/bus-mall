@@ -8,3 +8,12 @@ form.addEventListener('submit', function() {
     const settings = {numberOfChoices: numberOfChoices, numberOfVotes: numberOfVotes};
     localStorage.setItem('settings', JSON.stringify(settings));
 });
+
+const resetButton = document.getElementById('reset-all');
+resetButton.addEventListener('click', function() {
+    const sure = confirm('CAUTION: This will clear all settings and all user data collected.');
+    if (sure) {
+        localStorage.clear();
+    }
+    form.reset();
+});

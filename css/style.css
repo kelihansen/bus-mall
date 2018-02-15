@@ -31,11 +31,15 @@ img {
     max-height: 300px;
 }
 
-#results-holder {
+#session-results-holder, #cumulative-results-holder {
     width: 1060px;
     margin: 0 auto;
     display: flex;
     justify-content: center;
+}
+
+#cumulative-results-holder {
+    margin-top: 50px;
 }
 
 .chart-style {

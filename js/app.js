@@ -1,14 +1,26 @@
 'use strict';
 
-const numberOfChoices = 3;
-const numberOfVotes = 25;
-
 const survey = {
+    numberOfChoices: 3,
+    numberOfVotes: 25,
     products: [],
     previousSelections: [],
     totalSelections: 0,
     imageHolder: document.getElementById('img-holder'),
     begin: function() {
+        this.establishSettings();
+        this.establishProducts();
+        this.displayProducts();
+        this.imageHolder.addEventListener('click', collectVotes);
+    },
+    establishSettings: function() {
+        if (localStorage.getItem('settings')) {
+            const submittedSettings = JSON.parse(localStorage.getItem('settings'));
+            this.numberOfChoices = parseInt(submittedSettings.numberOfChoices);
+            this.numberOfVotes = parseInt(submittedSettings.numberOfVotes);
+        }
+    },
+    establishProducts: function() {
         if (localStorage.getItem('products')) {
             const storedProducts = JSON.parse(localStorage.getItem('products'));
             for (let i = 0; i < storedProducts.length; i++) {
@@ -40,12 +52,10 @@ const survey = {
                 new Product('Wine Glass', 'img/wine-glass.jpg', 0, 0)
             );
         }
-        this.displayProducts();
-        this.imageHolder.addEventListener('click', collectVotes);
     },
     getRandomProducts: function() {
         const selectedProducts = [];
-        while (selectedProducts.length < numberOfChoices) {
+        while (selectedProducts.length < this.numberOfChoices) {
             const randomIndex = Math.floor(Math.random() * this.products.length);
             const potentialProduct = this.products[randomIndex];
             if (selectedProducts.includes(potentialProduct) || this.previousSelections.includes(potentialProduct)) continue;
@@ -56,7 +66,7 @@ const survey = {
     },
     displayProducts: function() {
         const selectedProducts = this.getRandomProducts();
-        for (let i = 0; i < numberOfChoices; i++) {
+        for (let i = 0; i < this.numberOfChoices; i++) {
             const imagePanel = document.createElement('div');
             const newImage = selectedProducts[i].createImage();
             imagePanel.setAttribute('class', 'img-panel');
@@ -186,7 +196,7 @@ function collectVotes() {
             }
         }
         survey.clearProducts();
-        if (survey.totalSelections < numberOfVotes) {
+        if (survey.totalSelections < survey.numberOfVotes) {
             survey.displayProducts();
         } else {
             survey.end();

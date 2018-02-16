@@ -1,14 +1,30 @@
 'use strict';
 
-const numberOfChoices = 3;
-const numberOfVotes = 25;
-
 const survey = {
+    numberOfChoices: 3,
+    numberOfVotes: 25,
     products: [],
     previousSelections: [],
     totalSelections: 0,
     imageHolder: document.getElementById('img-holder'),
+    buttonHolder: document.getElementById('button-holder'),
+    resultsHolder: document.getElementById('results-holder'),
     begin: function() {
+        this.getSettings();
+        this.getProducts();
+        this.displayProducts();
+        this.createCounter();
+        this.createClearButton();
+        this.imageHolder.addEventListener('click', collectVotes);
+    },
+    getSettings: function() {
+        if (localStorage.getItem('settings')) {
+            const storedSettings = JSON.parse(localStorage.getItem('settings'));
+            this.numberOfChoices = parseInt(storedSettings.numberOfChoices);
+            this.numberOfVotes = parseInt(storedSettings.numberOfVotes);
+        }
+    },
+    getProducts: function() {
         if (localStorage.getItem('products')) {
             const storedProducts = JSON.parse(localStorage.getItem('products'));
             for (let i = 0; i < storedProducts.length; i++) {
@@ -40,12 +56,22 @@ const survey = {
                 new Product('Wine Glass', 'img/wine-glass.jpg', 0, 0)
             );
         }
-        this.displayProducts();
-        this.imageHolder.addEventListener('click', collectVotes);
     },
-    getRandomProducts: function() {
+    displayProducts: function() {
+        const selectedProducts = this.pickRandomProducts();
+        for (let i = 0; i < this.numberOfChoices; i++) {
+            const imagePanel = document.createElement('div');
+            imagePanel.setAttribute('class', 'img-panel');
+            const newImage = selectedProducts[i].createImage();
+            imagePanel.appendChild(newImage);
+            this.imageHolder.appendChild(imagePanel);
+            selectedProducts[i].timesShown++;
+            selectedProducts[i].cumulativeShown++;
+        }
+    },
+    pickRandomProducts: function() {
         const selectedProducts = [];
-        while (selectedProducts.length < numberOfChoices) {
+        while (selectedProducts.length < this.numberOfChoices) {
             const randomIndex = Math.floor(Math.random() * this.products.length);
             const potentialProduct = this.products[randomIndex];
             if (selectedProducts.includes(potentialProduct) || this.previousSelections.includes(potentialProduct)) continue;
@@ -54,17 +80,21 @@ const survey = {
         this.previousSelections = selectedProducts;
         return selectedProducts;
     },
-    displayProducts: function() {
-        const selectedProducts = this.getRandomProducts();
-        for (let i = 0; i < numberOfChoices; i++) {
-            const imagePanel = document.createElement('div');
-            const newImage = selectedProducts[i].createImage();
-            imagePanel.setAttribute('class', 'img-panel');
-            imagePanel.appendChild(newImage);
-            this.imageHolder.appendChild(imagePanel);
-            selectedProducts[i].timesShown++;
-            selectedProducts[i].cumulativeShown++;
-        }
+    createCounter: function() {
+        const counterHolder = document.getElementById('counter-holder');
+        const p = document.createElement('p');
+        counterHolder.appendChild(p);
+        p.textContent = this.numberOfVotes + ' votes remaining';
+    },
+    createClearButton: function() {
+        const clearButton = document.createElement('button');
+        clearButton.setAttribute('id', 'clear');
+        clearButton.setAttribute('type', 'button');
+        clearButton.textContent = 'Clear & Restart';
+        this.buttonHolder.appendChild(clearButton);
+        clearButton.addEventListener('click', function() {
+            survey.clearSession();
+        });
     },
     clearProducts: function() {
         while (this.imageHolder.firstChild) {
@@ -72,14 +102,34 @@ const survey = {
         }
     },
     end: function () {
+        localStorage.setItem('products', JSON.stringify(this.products));
         this.imageHolder.removeEventListener('click', collectVotes);
+        this.createSaveButton();
+        const clearButton = document.getElementById('clear');
+        clearButton.remove();
+        const counter = document.querySelector('#counter-holder p');
+        counter.remove();
         this.displaySessionResults();
         this.displayCumulativeResults();
-        localStorage.setItem('products', JSON.stringify(this.products));
+    },
+    createSaveButton: function() {
+        const saveButtonLabel = document.createElement('p');
+        saveButtonLabel.textContent = 'Thank you! Your results have been saved.';
+        this.buttonHolder.appendChild(saveButtonLabel);
+        const saveButton = document.createElement('button');
+        saveButton.setAttribute('type', 'button');
+        saveButton.textContent = 'Start New Round';
+        this.buttonHolder.appendChild(saveButton);
+        saveButton.addEventListener('click', function() {
+            survey.restart();
+            saveButtonLabel.remove();
+            saveButton.remove();
+        });
     },
     displaySessionResults: function() {
-        const sessionChart = document.getElementById('session-chart');
-        const context = sessionChart.getContext('2d');
+        const canvas = document.createElement('canvas');
+        this.resultsHolder.appendChild(canvas);
+        const context = canvas.getContext('2d');
         const names = [];
         const shownCounts = [];
         const clickCounts = [];
@@ -89,7 +139,6 @@ const survey = {
             clickCounts.push(item.timesClicked);
             shownCounts.push(item.timesShown);
         }
-        sessionChart.classList.add('chart-style');
         new Chart(context, { //eslint-disable-line
             type: 'bar',
             data: {
@@ -111,7 +160,10 @@ const survey = {
                 scales: {
                     xAxes: [{
                         barPercentage: 1,
-                        categoryPercentage: 0.7
+                        categoryPercentage: 0.7,
+                        ticks: {
+                            autoSkip: false
+                        }
                     }],
                     yAxes: [{
                         ticks: {
@@ -124,8 +176,9 @@ const survey = {
         });
     },
     displayCumulativeResults: function () {
-        const cumulativeChart = document.getElementById('cumulative-chart');
-        const context = cumulativeChart.getContext('2d');
+        const canvas = document.createElement('canvas');
+        this.resultsHolder.appendChild(canvas);
+        const context = canvas.getContext('2d');
         const names = [];
         const shownCounts = [];
         const clickCounts = [];
@@ -135,7 +188,6 @@ const survey = {
             clickCounts.push(item.cumulativeClicked);
             shownCounts.push(item.cumulativeShown);
         }
-        cumulativeChart.classList.add('chart-style');
         new Chart(context, { //eslint-disable-line
             type: 'bar',
             data: {
@@ -157,7 +209,10 @@ const survey = {
                 scales: {
                     xAxes: [{
                         barPercentage: 1,
-                        categoryPercentage: 0.7
+                        categoryPercentage: 0.7,
+                        ticks: {
+                            autoSkip: false
+                        }
                     }],
                     yAxes: [{
                         ticks: {
@@ -167,26 +222,56 @@ const survey = {
                 }
             }
         });
+    },
+    clearSession: function() {
+        if (confirm('Clear data from current session and begin again?')) {
+            const clearButton = document.getElementById('clear');
+            clearButton.remove();
+            this.clearProducts();
+            const counter = document.querySelector('#counter-holder p');
+            counter.remove();
+            this.products = [];
+            this.totalSelections = 0;
+            this.begin();
+        }
+    },
+    restart: function() {
+        this.clearResults();
+        this.products = [];
+        this.totalSelections = 0;
+        this.begin();
+    },
+    clearResults: function() {
+        while (this.resultsHolder.firstChild) {
+            this.resultsHolder.removeChild(this.resultsHolder.firstChild);
+        }
     }
 };
 
 function collectVotes() {
     let id = event.target.id;
-    if (id === '') {
-        id = event.target.firstElementChild.id;
-    }
     if (id !== 'img-holder') {
+        if (id === '') {
+            id = event.target.firstElementChild.id;
+        }
         for (let i = 0; i < survey.products.length; i++) {
             const item = survey.products[i];
             if (id === item.idName) {
                 item.timesClicked++;
                 item.cumulativeClicked++;
-                survey.totalSelections++;
                 break;
             }
         }
+        survey.totalSelections++;
+        const counter = document.querySelector('#counter-holder p');
+        const votesRemaining = survey.numberOfVotes - survey.totalSelections;
+        let votes = 'votes';
+        if (votesRemaining === 1) {
+            votes = 'vote';
+        }
+        counter.textContent = votesRemaining + ' ' + votes + ' remaining';
         survey.clearProducts();
-        if (survey.totalSelections < numberOfVotes) {
+        if (survey.totalSelections < survey.numberOfVotes) {
             survey.displayProducts();
         } else {
             survey.end();

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BusMall Settings</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <form id="settings-form">
+        <fieldset>
+            <legend>BusMall Survey Settings</legend>
+            <label for="choices">Number of Choices</label>
+            <input name="choices" type="number" min="2" max="5" required>
+            <label for="votes">Number of Votes</label>
+            <input name="votes" type="number" min="5" max="20" required>
+            <button type="submit">Save Changes</button>
+        </fieldset>
+        <fieldset>
+            <legend>Reset Survey</legend>
+            <button id="reset-all" type="button">Reset</button>
+        </fieldset>
+    </form>
+    <script src="js/settings.js"></script>
+</body>
+</html>

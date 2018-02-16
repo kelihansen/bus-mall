@@ -94,7 +94,6 @@ const survey = {
         this.buttonHolder.appendChild(clearButton);
         clearButton.addEventListener('click', function() {
             survey.clearSession();
-            clearButton.remove();
         });
     },
     clearProducts: function() {
@@ -226,6 +225,8 @@ const survey = {
     },
     clearSession: function() {
         if (confirm('Clear data from current session and begin again?')) {
+            const clearButton = document.getElementById('clear');
+            clearButton.remove();
             this.clearProducts();
             const counter = document.querySelector('#counter-holder p');
             counter.remove();

@@ -1,48 +1,93 @@
 * {
     margin: 0;
     padding: 0;
-    font-family: sans-serif;
+    box-sizing: border-box;
 }
 
 body {
     background-color: black;
+    font-family: sans-serif;
+    color: white;
 }
 
 #img-holder {
-    margin: 50px auto 0 auto;
-    width: 1100px;
+    margin: 0 auto;
+    width: 90%;
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
 }
 
 .img-panel {
     background-color: white;
     border: solid 20px white;
-    height: 300px;
-    width: 300px;
+    height: 340px;
+    width: 340px;
     display: flex;
     justify-content: center;
     align-items: center;
+    margin: 0 15px;
 }
 
 img {
-    max-width: 300px;
-    max-height: 300px;
+    max-width: 100%;
+    max-height: 100%;
 }
 
-#session-results-holder, #cumulative-results-holder {
-    width: 1060px;
+#results-holder {
+    width: 80%;
     margin: 0 auto;
-    display: flex;
-    justify-content: center;
 }
 
-#cumulative-results-holder {
+canvas:last-child {
     margin-top: 50px;
+    margin-bottom: 100px;
 }
 
-.chart-style {
+canvas {
     background-color: white;
-    border: solid 20px white;    
+    border: solid 20px white;
+}
+
+p {
+    text-align: center;
+    margin-top: 20px;
+}
+
+form {
+    width: 30%;
+    margin: 50px auto;
+    background-color: white;
+    color: black;
+    padding: 20px;
+}
+
+fieldset {
+    margin: 10px;
+    padding: 20px;
+}
+
+legend {
+    font-weight: bold;
+}
+
+input {
+    display: block;
+    margin-bottom: 20px;
+    margin-top: 5px;
+    padding: 3px;
+}
+
+button {
+    background-color: rgb(87, 169, 217);
+    font-size: 0.8rem;
+    color: white;
+    margin: 10px auto;
+    padding: 10px;
+    border: none;
+    display: block;
+}
+
+#button-holder {
+    padding: 20px;
 }

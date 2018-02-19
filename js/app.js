@@ -8,11 +8,11 @@ const survey = {
     totalSelections: 0,
     imageHolder: document.getElementById('img-holder'),
     buttonHolder: document.getElementById('button-holder'),
-    resultsHolder: document.getElementById('results-holder'),
     begin: function() {
         this.getSettings();
         this.getProducts();
         this.displayProducts();
+        this.createDirections();
         this.createCounter();
         this.createClearButton();
         this.imageHolder.addEventListener('click', collectVotes);
@@ -61,13 +61,35 @@ const survey = {
         const selectedProducts = this.pickRandomProducts();
         for (let i = 0; i < this.numberOfChoices; i++) {
             const imagePanel = document.createElement('div');
-            imagePanel.setAttribute('class', 'img-panel');
+            imagePanel.classList.add('img-panel');
+            switch (this.numberOfChoices) {
+            case 2:
+                imagePanel.classList.add('two-images');
+                break;
+            case 3:
+                imagePanel.classList.add('three-images');
+                break;
+            case 4:
+                imagePanel.classList.add('four-images');
+                break;
+            case 5:
+                imagePanel.classList.add('five-images');
+                break;
+            }
             const newImage = selectedProducts[i].createImage();
             imagePanel.appendChild(newImage);
             this.imageHolder.appendChild(imagePanel);
             selectedProducts[i].timesShown++;
             selectedProducts[i].cumulativeShown++;
         }
+    },
+    createDirections: function() {
+        const directions = document.createElement('p');
+        directions.id = 'directions';
+        directions.textContent = 'Please click on the product you\'d be most likely to purchase from a catalog distributed on public transit.';
+        const wrapper = document.getElementById('wrapper');
+        const counterHolder = document.getElementById('counter-holder');
+        wrapper.insertBefore(directions, counterHolder);
     },
     pickRandomProducts: function() {
         const selectedProducts = [];
@@ -88,7 +110,7 @@ const survey = {
     },
     createClearButton: function() {
         const clearButton = document.createElement('button');
-        clearButton.setAttribute('id', 'clear');
+        clearButton.id = 'clear';
         clearButton.setAttribute('type', 'button');
         clearButton.textContent = 'Clear & Restart';
         this.buttonHolder.appendChild(clearButton);
@@ -105,6 +127,8 @@ const survey = {
         localStorage.setItem('products', JSON.stringify(this.products));
         this.imageHolder.removeEventListener('click', collectVotes);
         this.createSaveButton();
+        const directions = document.getElementById('directions');
+        directions.remove();
         const clearButton = document.getElementById('clear');
         clearButton.remove();
         const counter = document.querySelector('#counter-holder p');
@@ -114,7 +138,7 @@ const survey = {
     },
     createSaveButton: function() {
         const saveButtonLabel = document.createElement('p');
-        saveButtonLabel.textContent = 'Thank you! Your results have been saved.';
+        saveButtonLabel.textContent = 'Thank you! Your responses have been saved.';
         this.buttonHolder.appendChild(saveButtonLabel);
         const saveButton = document.createElement('button');
         saveButton.setAttribute('type', 'button');
@@ -127,8 +151,16 @@ const survey = {
         });
     },
     displaySessionResults: function() {
+        const resultsHolder = document.createElement('section');
+        resultsHolder.id = 'results-holder';
+        const wrapper = document.getElementById('wrapper');
+        wrapper.appendChild(resultsHolder);
+        const sessionResultsLabel = document.createElement('h2');
+        sessionResultsLabel.textContent = 'Your Responses';
+        resultsHolder.appendChild(sessionResultsLabel);
         const canvas = document.createElement('canvas');
-        this.resultsHolder.appendChild(canvas);
+        canvas.setAttribute('width', '1000px');
+        resultsHolder.appendChild(canvas);
         const context = canvas.getContext('2d');
         const names = [];
         const shownCounts = [];
@@ -176,8 +208,13 @@ const survey = {
         });
     },
     displayCumulativeResults: function () {
+        const resultsHolder = document.getElementById('results-holder');
+        const cumulativeResultsLabel = document.createElement('h2');
+        cumulativeResultsLabel.textContent = 'All Responses';
+        resultsHolder.appendChild(cumulativeResultsLabel);
         const canvas = document.createElement('canvas');
-        this.resultsHolder.appendChild(canvas);
+        canvas.setAttribute('width', '1000px');
+        resultsHolder.appendChild(canvas);
         const context = canvas.getContext('2d');
         const names = [];
         const shownCounts = [];
@@ -225,6 +262,8 @@ const survey = {
     },
     clearSession: function() {
         if (confirm('Clear data from current session and begin again?')) {
+            const directions = document.getElementById('directions');
+            directions.remove();
             const clearButton = document.getElementById('clear');
             clearButton.remove();
             this.clearProducts();
@@ -242,9 +281,8 @@ const survey = {
         this.begin();
     },
     clearResults: function() {
-        while (this.resultsHolder.firstChild) {
-            this.resultsHolder.removeChild(this.resultsHolder.firstChild);
-        }
+        const resultsHolder = document.getElementById('results-holder');
+        resultsHolder.remove();
     }
 };
 
